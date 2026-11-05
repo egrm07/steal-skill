@@ -88,6 +88,13 @@ test('list and remove', async () => {
   assert.ok(!fs.existsSync(path.join(home, '.claude/skills/steal-octoreviewer')));
 });
 
+test('a rate limit before any comment says so, not that there are none', async () => {
+  const { code, err } = await run(['octoreviewer', '--fresh'], { home: tmpdir(), gh: fakeGitHub({ rateLimitAfter: 3 }) });
+  assert.equal(code, 1);
+  assert.match(err, /GitHub rate limit reached\. Try again/);
+  assert.doesNotMatch(err, /has no public code review comments/);
+});
+
 test('an unknown user exits 1', async () => {
   const { code, err } = await run(['nobody-here', '--fresh'], { home: tmpdir() });
   assert.equal(code, 1);

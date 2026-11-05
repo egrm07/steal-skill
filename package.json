@@ -1,6 +1,6 @@
 {
   "name": "steal-skill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn any GitHub user's public code reviews into a skill your AI agent can use: npx steal-skill <user>, then ask for a review like them.",
   "type": "module",
   "bin": {

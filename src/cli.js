@@ -216,6 +216,11 @@ export async function main(argv, io = {}) {
       continue;
     }
     const p = buildProfile(data.user, data.comments);
+    if (!p.total && data.limited) {
+      stderr.write(limitMessage(data.resetAt, !data.tokenless, now) + '\n');
+      code = 1;
+      continue;
+    }
     if (!p.total) {
       stderr.write(`${data.user.login} has no public code review comments on other people's pull requests that GitHub search can find.\n`);
       code = 1;
