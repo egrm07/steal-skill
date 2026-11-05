@@ -1,0 +1,39 @@
+{
+  "name": "steal-skill",
+  "version": "1.0.0",
+  "description": "Turn any GitHub user's public code reviews into a skill your AI agent can use: npx steal-skill <user>, then ask for a review like them.",
+  "type": "module",
+  "bin": {
+    "steal-skill": "bin/steal-skill.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/",
+    "demo": "node scripts/demo.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude-code",
+    "codex",
+    "agent-skills",
+    "code-review",
+    "github",
+    "ai-agents",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/egrm07/steal-skill.git"
+  },
+  "homepage": "https://github.com/egrm07/steal-skill#readme",
+  "bugs": "https://github.com/egrm07/steal-skill/issues",
+  "author": "Egor Menshikov",
+  "license": "MIT"
+}
