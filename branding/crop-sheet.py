@@ -1,7 +1,8 @@
+import math
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 src, out = Path(sys.argv[1]), Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
 im = Image.open(src).convert('RGB')
@@ -27,12 +28,64 @@ def rounded(img, r=0.22, ss=4):
 def pad_to(p, ratio):  # widen with background on the left
     w,h = p.size; nw = round(h*ratio); c = Image.new('RGB',(nw,h),BG); c.paste(p,(nw-w,0)); return c
 for n,p in [('P1',P1),('P2',P2),('P3',P3),('P4',P4),('P5',P5)]: print(n, p.size, bbox(p))
+# Text added on top of the generated art, drawn at output size so it stays sharp.
+INK = (17, 18, 15)
+MONO = ('/System/Library/Fonts/Menlo.ttc', 1)       # Menlo Bold
+SANS = ('/System/Library/Fonts/Helvetica.ttc', 1)   # Helvetica Bold
+CHECKLIST = ['add a test?', 'nit: naming', 'handle errors']
+BUBBLE = ['Your lead would', 'flag line 42.']
+SP = im.load()
+def cream(p): return p[0] > 200 and p[1] > 185 and p[2] > 150 and p[0] - p[2] > 12
+def fit(spec, lines, w, h, gap=0.25):
+    size = 200
+    while size > 6:
+        f = ImageFont.truetype(spec[0], size, index=spec[1])
+        lw = max(f.getlength(t) for t in lines); lh = size * (len(lines) + gap * (len(lines) - 1))
+        if lw <= w and lh <= h: return f
+        size -= 1
+    return f
+def stamp(img, text, font, cx, cy, angle):
+    w = int(font.getlength(text)) + 8; h = int(font.size * 1.4)
+    layer = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    ImageDraw.Draw(layer).text((w / 2, h / 2), text, font=font, fill=INK, anchor='mm')
+    layer = layer.rotate(-angle, resample=Image.BICUBIC, expand=True)
+    img.paste(layer, (round(cx - layer.width / 2), round(cy - layer.height / 2)), layer)
+def checklist(img, T, k):
+    # the three comment boxes on the scroll, in sheet pixels (found by colour)
+    for (x0, y0, x1, y1), text in zip([(621, 165, 752, 210), (596, 230, 740, 278), (560, 297, 717, 344)], CHECKLIST):
+        green = [x for y in range(y0, y1) for x in range(x0, x1) if SP[x, y][1] > SP[x, y][0] + 60 and SP[x, y][1] > 90]
+        right = min(green) - 5
+        def mid(x, y0=y0, y1=y1):
+            ys = [y for y in range(y0 - 3, y1 + 4) if cream(SP[x, y])]
+            return (ys[0] + ys[-1]) / 2, ys[-1] - ys[0]
+        # the boxes lean with the scroll, so start the text past the furthest-right left edge
+        band = range((3 * y0 + y1) // 4, (y0 + 3 * y1) // 4)
+        left = max(next(x for x in range(x0, x1) if cream(SP[x, y])) for y in band) + 6
+        (ya, ha), (yb, _) = mid(left), mid(right)
+        angle = math.degrees(math.atan2(yb - ya, right - left))
+        font = fit(MONO, [text], (right - left) * k * 0.97, ha * k * 0.42)
+        tw = font.getlength(text)
+        ax, ay = T(left, ya); c = math.cos(math.radians(angle)); s_ = math.sin(math.radians(angle))
+        stamp(img, text, font, ax + tw / 2 * c, ay + tw / 2 * s_, angle)
+def bubble(img, T, k):
+    x0, y0, x1, y1 = 326, 398, 599, 560   # white bubble, sheet pixels
+    widths = {y: sum(1 for x in range(x0, x1) if min(SP[x, y]) > 235) for y in range(y0, y1)}
+    big = [y for y, n in widths.items() if n > 0.5 * max(widths.values())]
+    cx, cy = T((x0 + x1) / 2, (big[0] + big[-1]) / 2)
+    font = fit(SANS, BUBBLE, (x1 - x0) * k * 0.66, (big[-1] - big[0]) * k * 0.5)
+    lh = font.size * 1.25
+    for i, line in enumerate(BUBBLE):
+        stamp(img, line, font, cx, cy + (i - (len(BUBBLE) - 1) / 2) * lh, 0)
 # banner 3:1, padded on the empty left
-pad_to(P1, 3).resize((2400,800), L).save(out/'banner.png', optimize=True)
-# social preview 2:1, GitHub size, keep left content
-P2.crop((0,0,942,471)).resize((1280,640), L).save(out/'social-preview.png', optimize=True)
-# launch post 16:9
-P2.crop((0,0,837,471)).resize((1600,900), L).save(out/'launch-post.png', optimize=True)
+wide = pad_to(P1, 3); k = 2400 / wide.width; off = wide.width - P1.width
+banner = wide.resize((2400, 800), L)
+checklist(banner, lambda x, y: ((x - 11 + off) * k, (y - 11) * k), k)
+banner.save(out/'banner.png', optimize=True)
+# social preview 2:1, GitHub size, and launch post 16:9, both from the robot panel
+for name, cw, size in [('social-preview', 942, (1280, 640)), ('launch-post', 837, (1600, 900))]:
+    k = size[0] / cw; img = P2.crop((0, 0, cw, 471)).resize(size, L)
+    bubble(img, lambda x, y, k=k: ((x - 11) * k, (y - 390) * k), k)
+    img.save(out/f'{name}.png', optimize=True)
 # logo and avatar
 head = square(P3, pad=0.09)
 head.save(out/'avatar.png', optimize=True)

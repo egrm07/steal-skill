@@ -25,6 +25,8 @@ No install and no API key. It reads public GitHub data, and nothing is posted an
 
 ## What you get
 
+<img src="assets/brand/sticker-treasure.png" alt="Polly sitting on a treasure chest full of review comments" width="150" align="right">
+
 A `SKILL.md` your agent loads on its own whenever you ask for a review in that person's style:
 
 - **What to look at, in their order.** Tests, errors, naming, correctness, clarity and so on, ranked by how often they actually raise each one, with real quotes.
@@ -44,7 +46,13 @@ It is installed for **Claude Code** (`~/.claude/skills`) and, when you have it, 
 - The reviewer you learned the most from.
 - Yourself. See what your own reviews say about you.
 
+<p align="center">
+  <img src="assets/brand/launch-post.png" alt="Polly on a coding agent's shoulder, squawking: Your lead would flag line 42." width="620">
+</p>
+
 ## How it works
+
+<img src="assets/brand/sticker-squawk.png" alt="Polly squawking with wings spread" width="150" align="right">
 
 1. Finds pull requests the user reviewed or commented on, excluding their own (GitHub search).
 2. Reads their inline review comments, review summaries and thread comments on those pull requests.
