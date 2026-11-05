@@ -1,4 +1,8 @@
-# steal-skill
+<p align="center">
+  <img src="assets/brand/banner.png" alt="Polly, the steal-skill parrot, holding a long scroll of checked-off review comments" width="100%">
+</p>
+
+# <img src="assets/brand/logo.png" alt="" width="38" height="38"> steal-skill
 
 **Steal any developer's code review taste.** steal-skill reads a GitHub user's public pull request reviews and turns them into a skill your AI agent can use. Then you ask for a review like theirs.
 
